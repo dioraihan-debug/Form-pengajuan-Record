@@ -11,6 +11,10 @@ Route::get('/', function () {
     return redirect('/cctv-request');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
+
 // Client Routes
 Route::get('/cctv-request', [CctvRequestController::class, 'create'])->name('cctv.create');
 Route::post('/cctv-request', [CctvRequestController::class, 'store'])->name('cctv.store');
@@ -30,6 +34,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
         Route::get('/riwayat', [AdminRiwayatController::class, 'index'])->name('riwayat');
         Route::get('/riwayat/{id}/download-pdf', [AdminRiwayatController::class, 'downloadPdf'])->name('riwayat.download-pdf');
+        Route::post('/riwayat/{id}/status', [AdminRiwayatController::class, 'updateStatus'])->name('riwayat.update-status');
         
         Route::get('/ganti-password', [AdminPasswordController::class, 'showChangePasswordForm'])->name('password.change');
         Route::post('/ganti-password', [AdminPasswordController::class, 'changePassword'])->name('password.update');

@@ -15,8 +15,14 @@ class AdminRiwayatController extends Controller
         
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nama_klien', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('nama_klien', 'like', "%{$search}%")
                   ->orWhere('no_ktp', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status_pencarian')) {
+            $query->where('status_pencarian', $request->status_pencarian);
         }
         
         $requests = $query->orderBy('created_at', 'desc')->paginate(15);
@@ -24,6 +30,20 @@ class AdminRiwayatController extends Controller
         return view('admin.riwayat', compact('requests'));
     }
     
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status_pencarian' => 'required|in:pending,ditemukan,belum_ditemukan'
+        ]);
+
+        $cctvRequest = CctvRequest::findOrFail($id);
+        $cctvRequest->update([
+            'status_pencarian' => $request->status_pencarian
+        ]);
+
+        return back()->with('success', 'Status pencarian berhasil diperbarui.');
+    }
+
     public function downloadPdf($id)
     {
         $cctvRequest = CctvRequest::findOrFail($id);

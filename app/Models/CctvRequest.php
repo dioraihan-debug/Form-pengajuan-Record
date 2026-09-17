@@ -19,6 +19,7 @@ class CctvRequest extends Model
         'nomor_formulir',
         'tanggal_formulir',
         'status_keputusan',
+        'status_pencarian',
         'file_pdf',
     ];
     

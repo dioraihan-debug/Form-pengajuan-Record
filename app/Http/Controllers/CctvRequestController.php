@@ -42,7 +42,11 @@ class CctvRequestController extends Controller
         // Update record with pdf path
         $cctvRequest->update(['file_pdf' => $pdfPath]);
         
-        return redirect()->route('cctv.pdf', $cctvRequest->id);
+        return redirect()->route('cctv.create')->with([
+            'success' => 'Pengajuan rekaman CCTV berhasil dikirim!',
+            'download_url' => route('cctv.pdf', $cctvRequest->id),
+            'client_name' => $cctvRequest->nama_klien,
+        ]);
     }
     
     public function downloadPdf($id)

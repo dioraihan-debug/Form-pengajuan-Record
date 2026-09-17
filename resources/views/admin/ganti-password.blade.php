@@ -1,13 +1,20 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="flex justify-center mt-10">
-    <div class="w-full max-w-lg bg-white rounded-lg shadow-md p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Ganti Password Admin</h2>
+<div class="flex justify-center py-6">
+    <div class="w-full max-w-lg bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200 dark:border-pink-900/40 p-8 transition-colors">
+        
+        <div class="flex items-center space-x-3 pb-4 mb-6 border-b border-pink-200 dark:border-pink-900/50">
+            <span class="w-3 h-7 bg-[#D6336C] rounded-full inline-block"></span>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Ganti Password Admin</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Perbarui kata sandi akun admin untuk keamanan data</p>
+            </div>
+        </div>
 
         @if ($errors->any())
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                <ul class="list-disc ml-4">
+            <div class="mb-5 bg-rose-50 dark:bg-rose-950/40 border-l-4 border-[#D6336C] p-3.5 rounded-r-xl text-xs text-[#D6336C] dark:text-rose-300">
+                <ul class="list-disc ml-4 space-y-1">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -15,31 +22,37 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.password.update') }}">
+        <form method="POST" action="{{ route('admin.password.update') }}" class="space-y-5">
             @csrf
 
-            <div class="mb-4">
-                <label for="password_lama" class="block text-gray-700 text-sm font-bold mb-2">Password Lama</label>
+            <div>
+                <label for="password_lama" class="block text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Password Saat Ini</label>
                 <input id="password_lama" type="password" name="password_lama" required
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-green-300">
+                       placeholder="Masukkan password saat ini"
+                       class="w-full bg-[#FFF5F8]/50 dark:bg-slate-800/70 border border-pink-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 custom-focus transition">
             </div>
 
-            <div class="mb-4">
-                <label for="password_baru" class="block text-gray-700 text-sm font-bold mb-2">Password Baru</label>
+            <div>
+                <label for="password_baru" class="block text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Password Baru</label>
                 <input id="password_baru" type="password" name="password_baru" required
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-green-300">
-                <p class="text-xs text-gray-500 mt-1">Minimal 6 karakter.</p>
+                       placeholder="Minimal 6 karakter"
+                       class="w-full bg-[#FFF5F8]/50 dark:bg-slate-800/70 border border-pink-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 custom-focus transition">
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Gunakan kombinasi huruf dan angka untuk keamanan optimal.</p>
             </div>
 
-            <div class="mb-6">
-                <label for="konfirmasi_password_baru" class="block text-gray-700 text-sm font-bold mb-2">Konfirmasi Password Baru</label>
+            <div>
+                <label for="konfirmasi_password_baru" class="block text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Konfirmasi Password Baru</label>
                 <input id="konfirmasi_password_baru" type="password" name="konfirmasi_password_baru" required
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:border-green-300">
+                       placeholder="Ulangi password baru"
+                       class="w-full bg-[#FFF5F8]/50 dark:bg-slate-800/70 border border-pink-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 custom-focus transition">
             </div>
 
-            <div class="flex items-center justify-end">
-                <a href="{{ route('admin.riwayat') }}" class="text-gray-600 hover:text-gray-800 mr-4 text-sm font-bold">Batal</a>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition">
+            <div class="pt-4 flex items-center justify-end space-x-3">
+                <a href="{{ route('admin.riwayat') }}" 
+                   class="bg-[#FFF5F8] dark:bg-slate-800 hover:bg-[#FFB6C1] dark:hover:bg-slate-700 text-[#D6336C] dark:text-pink-300 border border-pink-200 dark:border-slate-700 font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm transition">
+                    Batal
+                </a>
+                <button type="submit" class="btn-brand text-white font-bold py-2.5 px-6 rounded-xl text-xs sm:text-sm tracking-wide">
                     Simpan Password
                 </button>
             </div>
