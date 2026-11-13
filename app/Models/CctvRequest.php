@@ -21,6 +21,7 @@ class CctvRequest extends Model
         'status_keputusan',
         'status_pencarian',
         'file_pdf',
+        'foto_dokumentasi',
     ];
     
     protected $casts = [

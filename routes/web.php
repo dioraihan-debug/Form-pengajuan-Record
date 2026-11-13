@@ -35,6 +35,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/riwayat', [AdminRiwayatController::class, 'index'])->name('riwayat');
         Route::get('/riwayat/{id}/download-pdf', [AdminRiwayatController::class, 'downloadPdf'])->name('riwayat.download-pdf');
         Route::post('/riwayat/{id}/status', [AdminRiwayatController::class, 'updateStatus'])->name('riwayat.update-status');
+        Route::post('/riwayat/{id}/dokumentasi', [AdminRiwayatController::class, 'uploadDokumentasi'])->name('riwayat.upload-dokumentasi');
         
         Route::get('/ganti-password', [AdminPasswordController::class, 'showChangePasswordForm'])->name('password.change');
         Route::post('/ganti-password', [AdminPasswordController::class, 'changePassword'])->name('password.update');

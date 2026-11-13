@@ -124,6 +124,54 @@
                                     </svg>
                                     Edit
                                 </button>
+
+                                {{-- Dokumentasi Button --}}
+                                <button type="button" onclick="toggleDokPanel({{ $req->id }})"
+                                        class="inline-flex items-center {{ $req->foto_dokumentasi ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-sky-500 hover:bg-sky-600' }} text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-sm hover:scale-105 transition transform" title="Dokumentasi Hasil">
+                                    <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Dokumentasi
+                                </button>
+                            </div>
+
+                            {{-- Dokumentasi Panel (hidden by default) --}}
+                            <div id="dok-panel-{{ $req->id }}" class="hidden mt-2 p-3 rounded-xl border border-pink-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-left">
+                                @if($req->foto_dokumentasi)
+                                    @php($dokUrl = asset('storage/' . $req->foto_dokumentasi))
+                                    <a href="{{ $dokUrl }}" target="_blank" class="block mb-2">
+                                        @if(strtolower(pathinfo($req->foto_dokumentasi, PATHINFO_EXTENSION)) === 'pdf')
+                                            <span class="inline-flex items-center text-xs font-bold text-[#D6336C] dark:text-pink-300 underline">📄 Buka dokumentasi (PDF)</span>
+                                        @else
+                                            <img src="{{ $dokUrl }}" alt="Dokumentasi" class="max-h-32 rounded-lg border border-pink-200 dark:border-slate-600">
+                                        @endif
+                                        <span class="block text-[11px] text-slate-500 dark:text-slate-400">Dokumentasi saat ini. Upload baru akan menggantinya.</span>
+                                    </a>
+                                @endif
+
+                                <form action="{{ route('admin.riwayat.upload-dokumentasi', $req->id) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <label class="cursor-pointer inline-flex items-center bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 px-3 rounded-lg transition">
+                                            📁 Ambil dari File
+                                            <input type="file" class="hidden" accept="image/jpeg, image/png, image/jpg, application/pdf" onchange="handleDokSelect(this, {{ $req->id }})">
+                                        </label>
+                                    </div>
+                                    <input type="file" name="foto_dokumentasi" id="dok-real-{{ $req->id }}" class="hidden">
+                                    <img id="dok-preview-{{ $req->id }}" class="hidden mt-2 max-h-32 rounded-lg border border-pink-200 dark:border-slate-600" alt="Pratinjau">
+                                    <p id="dok-pdfname-{{ $req->id }}" class="hidden mt-2 text-xs font-semibold text-slate-700 dark:text-slate-200"></p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">JPG/PNG atau PDF, maks. 10MB. Foto otomatis dikompres.</p>
+                                    <div class="flex gap-1.5 mt-2">
+                                        <button type="submit" id="dok-submit-{{ $req->id }}" disabled
+                                                class="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold py-1.5 px-3 rounded-lg transition">
+                                            Simpan
+                                        </button>
+                                        <button type="button" onclick="toggleDokPanel({{ $req->id }})" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-bold py-1.5 px-3 rounded-lg transition">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
 
                             {{-- Inline Status Dropdown (hidden by default) --}}
@@ -173,6 +221,67 @@
         if (dropdown) {
             dropdown.classList.toggle('hidden');
         }
+    }
+
+    function toggleDokPanel(id) {
+        const panel = document.getElementById('dok-panel-' + id);
+        if (panel) panel.classList.toggle('hidden');
+    }
+
+    function compressImage(file, maxDim = 1600, quality = 0.8) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                const w = Math.round(img.width * scale);
+                const h = Math.round(img.height * scale);
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob((blob) => {
+                    if (!blob || blob.size >= file.size) return resolve(file);
+                    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+                    resolve(new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }));
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+            img.src = url;
+        });
+    }
+
+    async function handleDokSelect(input, id) {
+        if (!input.files || !input.files[0]) return;
+        const original = input.files[0];
+        if (original.size > 10 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 10MB.');
+            input.value = '';
+            return;
+        }
+        const isPdf = original.type === 'application/pdf' || /\.pdf$/i.test(original.name);
+        const file = isPdf ? original : await compressImage(original);
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('dok-real-' + id).files = dt.files;
+
+        const preview = document.getElementById('dok-preview-' + id);
+        const pdfName = document.getElementById('dok-pdfname-' + id);
+        if (isPdf) {
+            preview.classList.add('hidden');
+            pdfName.textContent = '📄 ' + file.name;
+            pdfName.classList.remove('hidden');
+        } else {
+            pdfName.classList.add('hidden');
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+        }
+        document.getElementById('dok-submit-' + id).disabled = false;
+        input.value = '';
     }
 
     // Auto-hide flash message after 4 seconds

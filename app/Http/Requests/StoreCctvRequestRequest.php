@@ -24,14 +24,14 @@ class StoreCctvRequestRequest extends FormRequest
     {
         return [
             'nama_klien' => 'required|string|max:255',
-            'no_ktp' => 'required|string|max:50',
-            'no_hp' => 'required|string|max:20',
+            'no_ktp' => ['required', 'regex:/^[0-9]+$/', 'max:50'],
+            'no_hp' => ['required', 'regex:/^[0-9]+$/', 'max:20'],
             'alamat' => 'required|string',
             'tanggal_kejadian' => 'required|date',
             'waktu_kejadian' => 'required',
             'posisi_cctv' => 'required|string|max:255',
             'alasan_kronologi' => 'required|string',
-            'foto_ktp' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'foto_ktp' => 'required|image|mimes:jpg,jpeg,png|max:10240',
         ];
     }
 }

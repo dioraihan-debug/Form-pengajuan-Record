@@ -7,12 +7,21 @@ use App\Models\CctvRequest;
 use App\Http\Requests\StoreCctvRequestRequest;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class CctvRequestController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
+        // Jika admin masih login lalu membuka form pemohon, akhiri sesi admin
+        // agar kembali ke panel admin harus login ulang.
+        if (Auth::guard('admin')->check()) {
+            Auth::guard('admin')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         return view('cctv-request.create');
     }
 

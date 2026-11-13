@@ -44,6 +44,24 @@ class AdminRiwayatController extends Controller
         return back()->with('success', 'Status pencarian berhasil diperbarui.');
     }
 
+    public function uploadDokumentasi(Request $request, $id)
+    {
+        $request->validate([
+            'foto_dokumentasi' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
+        ]);
+
+        $cctvRequest = CctvRequest::findOrFail($id);
+
+        if ($cctvRequest->foto_dokumentasi) {
+            Storage::disk('public')->delete($cctvRequest->foto_dokumentasi);
+        }
+
+        $path = $request->file('foto_dokumentasi')->store('dokumentasi', 'public');
+        $cctvRequest->update(['foto_dokumentasi' => $path]);
+
+        return back()->with('success', 'Dokumentasi hasil berhasil disimpan.');
+    }
+
     public function downloadPdf($id)
     {
         $cctvRequest = CctvRequest::findOrFail($id);

@@ -155,14 +155,14 @@
                             
                             <div>
                                 <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">No. KTP / NIK <span class="text-[#D6336C]">*</span></label>
-                                <input type="text" name="no_ktp" value="{{ old('no_ktp') }}" required 
+                                <input type="text" name="no_ktp" value="{{ old('no_ktp') }}" required inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
                                        placeholder="16 Digit Nomor KTP"
                                        class="w-full bg-[#FFF5F8]/50 dark:bg-slate-800/70 border border-pink-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 custom-focus transition">
                             </div>
 
                             <div>
                                 <label class="block text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">No. WhatsApp / HP <span class="text-[#D6336C]">*</span></label>
-                                <input type="text" name="no_hp" value="{{ old('no_hp') }}" required 
+                                <input type="text" name="no_hp" value="{{ old('no_hp') }}" required inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" 
                                        placeholder="08xxxxxxxxxx"
                                        class="w-full bg-[#FFF5F8]/50 dark:bg-slate-800/70 border border-pink-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 custom-focus transition">
                             </div>
@@ -249,7 +249,7 @@
                                 </label>
                             </div>
                             
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Format: JPG, JPEG, PNG (Maksimal 5MB)</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Format: JPG, JPEG, PNG (Maksimal 10MB, otomatis dikompres)</p>
 
                             <!-- The actual input that will be submitted -->
                             <input type="file" name="foto_ktp" id="foto_ktp_real" class="hidden" required>
@@ -371,18 +371,51 @@
         document.getElementById('waktu_kejadian').value = `${hours}:${minutes}`;
     }
 
-    function handleFileSelect(input) {
+    function compressImage(file, maxDim = 1600, quality = 0.8) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                let { width, height } = img;
+                const scale = Math.min(1, maxDim / Math.max(width, height));
+                width = Math.round(width * scale);
+                height = Math.round(height * scale);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    // Keep original if compression made it larger
+                    if (!blob || blob.size >= file.size) return resolve(file);
+                    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+                    resolve(new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }));
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+            img.src = url;
+        });
+    }
+
+    async function handleFileSelect(input) {
         if (input.files && input.files[0]) {
-            const file = input.files[0];
-            
-            // Validate size (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ukuran file terlalu besar. Maksimal 5MB.');
+            const original = input.files[0];
+
+            // Validate original size (10MB)
+            if (original.size > 10 * 1024 * 1024) {
+                alert('Ukuran file terlalu besar. Maksimal 10MB.');
                 input.value = '';
                 return;
             }
 
-            // Transfer file to the real input
+            const file = await compressImage(original);
+
+            // Transfer compressed file to the real input
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             document.getElementById('foto_ktp_real').files = dataTransfer.files;
